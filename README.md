@@ -1,8 +1,14 @@
 # Instructions
 
-Substrate chain scrapers template for 😻 [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/).
+Substrate chain scrapers template. 
+These application is standalone part of the bigger project https://hydradx.documento.cz/ that is based on 😻 [NestJS](https://nestjs.com/) and [Prisma](https://www.prisma.io/).
 
 ## Application Setup
+
+
+### Overview
+
+Application **cannot be build for now**. So you can just clone it into target machine and start from the terminal with ts-node (see below).
 
 ### 1. Install Dependencies
 
@@ -65,13 +71,14 @@ npm run seed
 
 ### 5. Start Substrate Scrapers
 
-Scrapers (in the application called grabbers) are just console applications. It is possible to run them directly in the development env or in the production. They can be also started from docker as well, just look at the  `docker-compose-yml` file.
+Scrapers (sometimes called grabbers) are just console applications. It is possible to run them directly in the development env or in the production. They can be also started as the main command in the docker container (just look at the  `docker-compose-yml`file).
+To show basic help you can run these commands:
 
-In development env run this command
+In development env
 ```bash
-npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts --help to show basic help.
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts --help 
 ```
-In the production env run this command
+In the production env - !!! not working for now !!!
 
 ```bash
 node ./dist/console-apps/grabbers.js --help
@@ -83,17 +90,29 @@ node ./dist/console-apps/grabbers.js --help
 - If you scrape data from small chain you will be fine with these options `-g block -gd from-highest-to-new`
 - But if you have to sync the big chain (Polkadot, Kusama) there is the way how to run grabbers in parallel. Just run as many grabbers as you are able to controll and check in separate shell terminal with the option: `-g block -gd range-from-to -n x y` where `x` is the higher range block number and the `y` is the lower block number. So for example you can run three grabbers like this 
 ```bash
-node ./dist/console-apps/grabbers.js -g block -gd range-from-to -n 1000000 1
-node ./dist/console-apps/grabbers.js -g block -gd range-from-to -n 2000000 1000001
-node ./dist/console-apps/grabbers.js -g block -gd range-from-to -n 3000000 2000001 
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 1000000 1
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 2000000 1000001
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 3000000 2000001 
 ```
 this way you will grab block from 1 to 3 milion in parallel.
 
 
+### 6. Prisma: Prisma Schema Development
 
-### 6. Prisma: Prisma Client JS
+Update the Prisma schema `prisma/schema.prisma` and after that run the following two commands:
 
-[Prisma Client JS](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/api) is a type-safe database client auto-generated based on the data model.
+```bash
+npx prisma generate
+# or in watch mode
+npx prisma generate --watch
+# or
+npm run prisma:generate
+npm run prisma:generate:watch
+```
+
+### 7. Prisma: Prisma Client JS
+
+[Prisma Client JS](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/api) is a type-safe database client auto-generated based on the data model. It could be used for futher development
 
 Generate Prisma Client JS by running
 
@@ -107,7 +126,9 @@ npm run prisma:generate
 
 ### 7. Start NestJS Server
 
-In case you would like to run API or GraphQL server, you should deal with NestJS application.
+!!! not working now !!!
+
+In case you would like to run API or GraphQL server, you should deal with NestJS application. 
 
 ## Docker
 
@@ -152,7 +173,6 @@ If `DATABASE_URL` is missing in the root `.env` file, which is loaded into the D
  2 |   provider = "postgresql"
  3 |   url      = env("DATABASE_URL")
 ```
-
 ### Docker Compose
 
 You can also setup a the database and Nest application with the docker-compose
@@ -167,19 +187,6 @@ npm run docker:build
 docker-compose up -d
 # or
 npm run docker
-```
-
-## Schema Development
-
-Update the Prisma schema `prisma/schema.prisma` and after that run the following two commands:
-
-```bash
-npx prisma generate
-# or in watch mode
-npx prisma generate --watch
-# or
-npm run prisma:generate
-npm run prisma:generate:watch
 ```
 
 **[⬆ back to top](#overview)**

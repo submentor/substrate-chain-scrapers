@@ -14,13 +14,17 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+#RUN npm run build
 
 FROM node:12-alpine
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
+#COPY --from=builder /app/dist ./dist
 
 EXPOSE 4000
-CMD [ "npm", "run", "start:prod" ]
+#CMD [ "npm", "run", "start:prod" ]
+
+# no command to start, just provide command in the docker-compose or attach to the docker container
+# terminal to run you own commands
+CMD tail -f /dev/null
