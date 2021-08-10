@@ -1,0 +1,303 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table Chain {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  name String [unique, not null]
+  updateStartedAt DateTime
+  lastUpdatedAt DateTime
+  lastGrabbedBlock Int
+  chainUpdates ChainUpdates [not null]
+}
+
+Table ChainUpdates {
+  id String [pk]
+  chain Chain [not null]
+  chainId String [not null]
+  type ChainUpdateType [not null]
+  startedAt DateTime [default: `now()`, not null]
+  finishedAt DateTime
+
+  indexes {
+    (chainId, type) [unique]
+  }
+}
+
+Table Block {
+  number Int [pk]
+  authoredBy Validator
+  authoredById String
+  startDateTime DateTime [not null]
+  hash String [unique, not null]
+  session Session
+  event Event [not null]
+  extrinsic Extrinsic [not null]
+  eraPayout EraPayout [not null]
+}
+
+Table Event {
+  id BigInt [pk, increment]
+  index Int [not null]
+  eventIndex String
+  block Block [not null]
+  blockNumber Int [not null]
+  blockDate DateTime
+  section String
+  method String
+  data Json [not null]
+  applyExtrinsic Int
+  phase Json
+  eraPyout EraPayout [not null]
+  topics Json
+
+  indexes {
+    (index, blockNumber) [unique]
+  }
+}
+
+Table Extrinsic {
+  id BigInt [pk, increment]
+  index Int [not null]
+  block Block [not null]
+  blockNumber Int [not null]
+  blockDate DateTime
+  section String [not null]
+  method String [not null]
+  args Json [not null]
+  eraPyout EraPayout [not null]
+  isSigned Boolean
+  signer String
+  nonce BigInt
+  tip Decimal
+
+  indexes {
+    (index, blockNumber) [unique]
+  }
+}
+
+Table Session {
+  index Int [pk]
+  startAtBlock Block [not null]
+  startBlockNumber Int [unique, not null]
+  era Era
+}
+
+Table Era {
+  index Int [pk]
+  eraStartSession Session [not null]
+  eraStartSessionIndex Int [not null]
+  totalPoints Float [not null]
+  totalStake Decimal [not null]
+  validatorsRewards Decimal [not null]
+  validatorsArrLength Int
+  payoutsMadeInEra EraPayout [not null]
+  payoutsForEra EraPayout [not null]
+  eraValidators EraValidator [not null]
+  eraNominators EraNominator [not null]
+}
+
+Table EraPayout {
+  id String [pk]
+  madeInEra Era [not null]
+  madeInEraIndex Int [not null]
+  account Account [not null]
+  accountId String [not null]
+  accountAddress String [not null]
+  event Event [not null]
+  eventId BigInt [not null]
+  extrinsic Extrinsic [not null]
+  extrinsicId BigInt [not null]
+  block Block [not null]
+  blockNumber Int [not null]
+  blockDate DateTime [not null]
+  payout Decimal [not null]
+  paidBy Account
+  paidById String
+  paidByAccount String [not null]
+  paidForEra Era [not null]
+  paidForEraIndex Int [not null]
+
+  indexes {
+    (madeInEraIndex, accountId, eventId, extrinsicId) [unique]
+  }
+}
+
+Table EraValidator {
+  era Era [not null]
+  eraIndex Int [not null]
+  validator Account
+  validatorId String
+  validatorAddress String [not null]
+  nominatorsArrLength Int
+  points Float [not null]
+  commission Float [not null]
+  totalStake Decimal [not null]
+  ownStake Decimal [not null]
+  othersStake Decimal [not null]
+  blocked Boolean [not null]
+  stash Decimal
+
+  indexes {
+    (eraIndex, validatorAddress) [pk]
+  }
+}
+
+Table EraNominator {
+  era Era [not null]
+  eraIndex Int [not null]
+  validator Account
+  validatorId String
+  validatorAddress String [not null]
+  nominator Account
+  nominatorId String
+  bonded Decimal [not null]
+  stash Decimal
+  nominatorAddress String [not null]
+
+  indexes {
+    (eraIndex, validatorAddress, nominatorAddress) [pk]
+  }
+}
+
+Table Identity {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  accountId String [unique, not null]
+  display String
+  parent String
+  displayParent String
+  email String
+  web String
+  twitter String
+  legal String
+  account Account
+  validator Validator
+  nominator Nominator
+}
+
+Table Account {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  accountId String [unique, not null]
+  balance Decimal [not null]
+  freeBalance Decimal [not null]
+  bonded Decimal [not null]
+  isValidator Boolean
+  validator Validator
+  validatorId String
+  isNominator Boolean
+  nominator Nominator
+  nominatorId String
+  nonce BigInt
+  identity Identity
+  identityId String
+  eraPayouts EraPayout [not null]
+  eraPayoutsPaidBy EraPayout [not null]
+  eraValidators EraValidator [not null]
+  eraNominatorsValidators EraNominator [not null]
+  eraNominators EraNominator [not null]
+}
+
+Table Validator {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  accountId String [unique, not null]
+  stashId String [not null]
+  balance Decimal [not null]
+  freeBalance Decimal [not null]
+  commission Float [not null]
+  bonded Decimal [not null]
+  nominators ValidatorsNominators [not null]
+  account Account
+  identity Identity
+  identityId String
+  block Block
+}
+
+Table Nominator {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  accountId String [unique, not null]
+  balance Decimal [not null]
+  freeBalance Decimal [not null]
+  bonded Decimal [not null]
+  validators ValidatorsNominators [not null]
+  account Account
+  identity Identity
+  identityId String
+}
+
+Table ValidatorsNominators {
+  validator Validator [not null]
+  validatorId String [not null]
+  nominator Nominator [not null]
+  nominatorId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (validatorId, nominatorId) [pk]
+  }
+}
+
+Enum ChainUpdateType {
+  ACCOUNT
+  VALIDATOR
+  NOMINATOR
+}
+
+Ref: ChainUpdates.chainId > Chain.id
+
+Ref: Block.authoredById - Validator.id
+
+Ref: Event.blockNumber > Block.number
+
+Ref: Extrinsic.blockNumber > Block.number
+
+Ref: Session.startBlockNumber - Block.number
+
+Ref: Era.eraStartSessionIndex - Session.index
+
+Ref: EraPayout.madeInEraIndex > Era.index
+
+Ref: EraPayout.accountId > Account.id
+
+Ref: EraPayout.eventId > Event.id
+
+Ref: EraPayout.extrinsicId > Extrinsic.id
+
+Ref: EraPayout.blockNumber > Block.number
+
+Ref: EraPayout.paidById > Account.id
+
+Ref: EraPayout.paidForEraIndex > Era.index
+
+Ref: EraValidator.eraIndex > Era.index
+
+Ref: EraValidator.validatorId > Account.id
+
+Ref: EraNominator.eraIndex > Era.index
+
+Ref: EraNominator.validatorId > Account.id
+
+Ref: EraNominator.nominatorId > Account.id
+
+Ref: Account.validatorId - Validator.id
+
+Ref: Account.nominatorId - Nominator.id
+
+Ref: Account.identityId - Identity.id
+
+Ref: Validator.identityId - Identity.id
+
+Ref: Nominator.identityId - Identity.id
+
+Ref: ValidatorsNominators.validatorId > Validator.id
+
+Ref: ValidatorsNominators.nominatorId > Nominator.id

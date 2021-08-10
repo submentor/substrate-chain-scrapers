@@ -1,0 +1,251 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["selectRelationCount", "orderByRelation"]
+
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model Chain {
+  id               String         @id @default(cuid())
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  name             String         @unique
+  updateStartedAt  DateTime?
+  lastUpdatedAt    DateTime?
+  lastGrabbedBlock Int?
+  chainUpdates     ChainUpdates[]
+}
+
+enum ChainUpdateType {
+  ACCOUNT
+  VALIDATOR
+  NOMINATOR
+}
+
+model ChainUpdates {
+  id         String          @id @default(cuid())
+  chain      Chain           @relation(fields: [chainId], references: [id])
+  chainId    String
+  type       ChainUpdateType
+  startedAt  DateTime        @default(now())
+  finishedAt DateTime?
+
+  @@unique([chainId, type])
+}
+
+model Block {
+  number        Int         @id
+  authoredBy    Validator?  @relation(fields: [authoredById], references: [id])
+  authoredById  String?
+  startDateTime DateTime
+  hash          String      @unique
+  session       Session?
+  event         Event[]
+  extrinsic     Extrinsic[]
+  eraPayout     EraPayout[]
+}
+
+model Event {
+  id             BigInt      @id @default(autoincrement())
+  index          Int
+  eventIndex     String?
+  block          Block       @relation(fields: [blockNumber], references: [number])
+  blockNumber    Int
+  blockDate      DateTime?
+  section        String?
+  method         String?
+  data           Json
+  applyExtrinsic Int?
+  phase          Json?
+  eraPyout       EraPayout[]
+  topics         Json?
+
+  @@unique([index, blockNumber])
+}
+
+model Extrinsic {
+  id          BigInt      @id @default(autoincrement())
+  index       Int
+  block       Block       @relation(fields: [blockNumber], references: [number])
+  blockNumber Int
+  blockDate   DateTime?
+  section     String
+  method      String
+  args        Json
+  eraPyout    EraPayout[]
+  isSigned    Boolean?
+  signer      String?
+  nonce       BigInt?
+  tip         Decimal?
+
+  @@unique([index, blockNumber])
+}
+
+model Session {
+  index            Int   @id
+  startAtBlock     Block @relation(fields: [startBlockNumber], references: [number])
+  startBlockNumber Int   @unique
+  era              Era?
+}
+
+model Era {
+  index                Int            @id
+  eraStartSession      Session        @relation(fields: [eraStartSessionIndex], references: [index])
+  eraStartSessionIndex Int
+  totalPoints          Float
+  totalStake           Decimal
+  validatorsRewards    Decimal
+  validatorsArrLength  Int?
+  payoutsMadeInEra     EraPayout[]    @relation("EraPayoutEventAt")
+  payoutsForEra        EraPayout[]    @relation("EraPayoutPaidForEra")
+  eraValidators        EraValidator[]
+  eraNominators        EraNominator[]
+}
+
+model EraPayout {
+  id              String    @id @default(cuid())
+  madeInEra       Era       @relation("EraPayoutEventAt", fields: [madeInEraIndex], references: [index])
+  madeInEraIndex  Int
+  account         Account   @relation("EraPayoutAccount", fields: [accountId], references: [id])
+  accountId       String
+  accountAddress  String
+  event           Event     @relation(fields: [eventId], references: [id])
+  eventId         BigInt
+  extrinsic       Extrinsic @relation(fields: [extrinsicId], references: [id])
+  extrinsicId     BigInt
+  block           Block     @relation(fields: [blockNumber], references: [number])
+  blockNumber     Int
+  blockDate       DateTime
+  payout          Decimal
+  paidBy          Account?  @relation("EraPayoutPaidBy", fields: [paidById], references: [id])
+  paidById        String?
+  paidByAccount   String
+  paidForEra      Era       @relation("EraPayoutPaidForEra", fields: [paidForEraIndex], references: [index])
+  paidForEraIndex Int
+
+  @@unique([madeInEraIndex, accountId, eventId, extrinsicId])
+}
+
+model EraValidator {
+  era                 Era      @relation(fields: [eraIndex], references: [index])
+  eraIndex            Int
+  validator           Account? @relation(fields: [validatorId], references: [id]) // should be related to Account because in Validaots table are current and not historical data
+  validatorId         String?
+  validatorAddress    String
+  nominatorsArrLength Int?
+  points              Float
+  commission          Float
+  totalStake          Decimal
+  ownStake            Decimal
+  othersStake         Decimal
+  blocked             Boolean
+  stash               Decimal?
+
+  @@id([eraIndex, validatorAddress])
+}
+
+model EraNominator {
+  era              Era      @relation(fields: [eraIndex], references: [index])
+  eraIndex         Int
+  validator        Account? @relation("EraNominatorValidator", fields: [validatorId], references: [id])
+  validatorId      String?
+  validatorAddress String
+  nominator        Account? @relation("EraNominator", fields: [nominatorId], references: [id])
+  nominatorId      String?
+  bonded           Decimal
+  stash            Decimal?
+  nominatorAddress String
+
+  @@id([eraIndex, validatorAddress, nominatorAddress])
+}
+
+model Identity {
+  id            String     @id @default(cuid())
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accountId     String     @unique
+  display       String?
+  parent        String?
+  displayParent String?
+  email         String?
+  web           String?
+  twitter       String?
+  legal         String?
+  account       Account?
+  validator     Validator?
+  nominator     Nominator?
+}
+
+model Account {
+  id                      String         @id @default(cuid())
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  accountId               String         @unique
+  balance                 Decimal
+  freeBalance             Decimal
+  bonded                  Decimal
+  isValidator             Boolean?
+  validator               Validator?     @relation(fields: [validatorId], references: [id])
+  validatorId             String?
+  isNominator             Boolean?
+  nominator               Nominator?     @relation(fields: [nominatorId], references: [id])
+  nominatorId             String?
+  nonce                   BigInt?
+  identity                Identity?      @relation(fields: [identityId], references: [id])
+  identityId              String?
+  eraPayouts              EraPayout[]    @relation("EraPayoutAccount")
+  eraPayoutsPaidBy        EraPayout[]    @relation("EraPayoutPaidBy")
+  eraValidators           EraValidator[]
+  eraNominatorsValidators EraNominator[] @relation("EraNominatorValidator")
+  eraNominators           EraNominator[] @relation("EraNominator")
+}
+
+model Validator {
+  id          String                 @id @default(cuid())
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  accountId   String                 @unique
+  stashId     String
+  balance     Decimal
+  freeBalance Decimal
+  commission  Float
+  bonded      Decimal
+  nominators  ValidatorsNominators[]
+  account     Account?
+  identity    Identity?              @relation(fields: [identityId], references: [id])
+  identityId  String?
+  block       Block?
+
+}
+
+model Nominator {
+  id          String                 @id @default(cuid())
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  accountId   String                 @unique
+  balance     Decimal
+  freeBalance Decimal
+  bonded      Decimal
+  validators  ValidatorsNominators[]
+  account     Account?
+  identity    Identity?              @relation(fields: [identityId], references: [id])
+  identityId  String?
+}
+
+model ValidatorsNominators {
+  validator   Validator @relation(fields: [validatorId], references: [id])
+  validatorId String // relation scalar field (used in the `@relation` attribute above)
+  nominator   Nominator @relation(fields: [nominatorId], references: [id])
+  nominatorId String // relation scalar field (used in the `@relation` attribute above)
+  createdAt   DateTime  @default(now())
+
+  @@id([validatorId, nominatorId])
+}
