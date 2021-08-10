@@ -5,6 +5,24 @@ These application is standalone part of the bigger project https://hydradx.docum
 
 ## Application Setup
 
+### Simpliest way to start scrapers
+
+- Start PostgreSQL (see below) and create database
+- prepare connection string edit `.env.example`file and save as `.env.production`
+- run these commands
+
+
+```bash
+docker-compose up -d --build
+docker exec -it scrapers-block-grabber /bin/sh
+npm run migrate:dev                                                                           # create database tables
+npm run seed                                                                                  # seed the Chain table
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts -g block -gd exact -n 1   # grab the first block
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts -g block -gd range-from-to -n 10000 1   
+
+# this way you can open separate ssh terminal and run another grabber with higher range -n 20000 10001
+```
+
 ### Overview
 
 Application **cannot be build for now**. So you can just clone it into target machine and start from the terminal with ts-node (see below). This step requires all nodejs developmnent tools to be installed on the machine. 
@@ -14,6 +32,7 @@ The second way is to start with docker-compose (see last chapter) and then run a
 ### 1. Install Dependencies
 
 Install the dependencies for the application:
+
 
 ```bash
 npm install
@@ -90,10 +109,11 @@ node ./dist/console-apps/grabbers.js --help
 - run grabbers script with `-g block` option followed by `-gd` (grabbers direction) option. The common use is to grab the first block with the options `-g block --gd exact -n 1` to get the block number 1 into the database. 
 - If you scrape data from small chain you will be fine with these options `-g block -gd from-highest-to-new`
 - But if you have to sync the big chain (Polkadot, Kusama) there is the way how to run grabbers in parallel. Just run as many grabbers as you are able to controll and check in separate shell terminal with the option: `-g block -gd range-from-to -n x y` where `x` is the higher range block number and the `y` is the lower block number. So for example you can run three grabbers like this 
+
 ```bash
-npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 1000000 1
-npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 2000000 1000001
-npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.js -g block -gd range-from-to -n 3000000 2000001 
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts -g block -gd range-from-to -n 1000000 1
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts -g block -gd range-from-to -n 2000000 1000001
+npx ts-node -r tsconfig-paths/register src/console-apps/grabbers.ts -g block -gd range-from-to -n 3000000 2000001 
 ```
 this way you will grab block from 1 to 3 milion in parallel.
 
