@@ -5,12 +5,11 @@ These application is standalone part of the bigger project https://hydradx.docum
 
 ## Application Setup
 
-
 ### Overview
 
 Application **cannot be build for now**. So you can just clone it into target machine and start from the terminal with ts-node (see below). This step requires all nodejs developmnent tools to be installed on the machine. 
 
-The second way is to start with docker-compose (see last chapter) and then run all commands from conatiner shell. You can attach the docker container shell as `docker exec -it 
+The second way is to start with docker-compose (see last chapter) and then run all commands from conatiner shell. You can attach the docker container shell as `docker exec -it scrapers-block-grabber /bin/sh`
 
 ### 1. Install Dependencies
 
