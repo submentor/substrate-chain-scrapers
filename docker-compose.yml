@@ -1,22 +1,5 @@
 version: '3.7'
 services:
-  scrapers-api:
-    container_name: scrapers-api
-    build:
-      context: .
-      dockerfile: Dockerfile.alpine
-    restart: always
-    networks:
-      - internal
-      - web
-    expose:
-      - 4000
-    volumes:
-      - '/etc/timezone:/etc/timezone:ro'
-      - '/etc/localtime:/etc/localtime:ro'
-    env_file:
-      - .env.production
-
   scrapers-block-grabber:
     container_name: scrapers-block-grabber
     build:
@@ -31,7 +14,8 @@ services:
       - '/etc/localtime:/etc/localtime:ro'
     env_file:
       - .env.production
-    command: node ./dist/console-apps/grabbers.js -g block -gd from-highest-to-new
+    #command: node ./dist/console-apps/grabbers.js -g block -gd from-highest-to-new
+    command: tail -f /dev/null
 
 #   postgres:
 #     image: postgres:12

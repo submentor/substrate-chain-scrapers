@@ -8,7 +8,9 @@ These application is standalone part of the bigger project https://hydradx.docum
 
 ### Overview
 
-Application **cannot be build for now**. So you can just clone it into target machine and start from the terminal with ts-node (see below).
+Application **cannot be build for now**. So you can just clone it into target machine and start from the terminal with ts-node (see below). This step requires all nodejs developmnent tools to be installed on the machine. 
+
+The second way is to start with docker-compose (see last chapter) and then run all commands from conatiner shell. You can attach the docker container shell as `docker exec -it 
 
 ### 1. Install Dependencies
 
@@ -176,6 +178,8 @@ If `DATABASE_URL` is missing in the root `.env` file, which is loaded into the D
 ### Docker Compose
 
 You can also setup a the database and Nest application with the docker-compose
+
+First prepare `.env.production` file then run
 
 ```bash
 # building new NestJS docker image
