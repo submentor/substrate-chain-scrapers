@@ -32,7 +32,7 @@ npm run docker:db
 
 ### 3. Prisma Migrate
 
-[Prisma Migrate](https://github.com/prisma/prisma2/tree/master/docs/prisma-migrate) is used to manage the schema and migration of the database. Prisma datasource requires an environment variable `DATABASE_URL` for the connection to the PostgreSQL database. It takes variables from [.env](./.env) file which is also used by Prisma Migrate and for seeding the database.
+[Prisma Migrate](https://github.com/prisma/prisma2/tree/master/docs/prisma-migrate) is used to manage the schema and migration of the database. Prisma datasource requires an environment variable `DATABASE_URL` for the connection to the PostgreSQL database. It takes variables from [.env](./.env) file which is also used by Prisma Migrate and for seeding the database. You can use [.env.example](./.env.example) to start with.
 
 Use Prisma Migrate in your [development environment](https://www.prisma.io/blog/prisma-migrate-preview-b5eno5g08d0b#evolving-the-schema-in-development) to
 
